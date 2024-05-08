@@ -1,18 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-public class AStar : MonoBehaviour
+public class AStar 
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public int[] nodePosition;
+    public float heuristica;
 
-    // Update is called once per frame
-    void Update()
+    public AStar(int[] nodePosition, int[] nodoObjetivo = null)
     {
-        
+        this.nodePosition = nodePosition;
+        if(nodoObjetivo != null)
+        {
+            heuristica = Vector3.Distance(new Vector3(nodePosition[0], nodePosition[1], 0), new Vector3(nodoObjetivo[0], nodoObjetivo[1], 0));
+        }
+        else { heuristica = 0; }
     }
 }
