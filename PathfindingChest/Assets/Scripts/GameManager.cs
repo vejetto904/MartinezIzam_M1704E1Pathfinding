@@ -5,20 +5,20 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public GameObject token1, token2, token3, token4;
-    private int[,] GameMatrix; //0 not chosen, 1 player, 2 enemy
+    private int[,] GameMatrix; // 0 not chosen, 1 player, 2 enemy
     private int[] startPos = new int[2];
     private int[] objectivePos = new int[2];
     private bool EvaluateWin = false;
 
-    private PriorityQueue<AStarNode> openSet;
-    private HashSet<AStarNode> closedSet;
+    private List<AStarNode> openSet;
+    private List<AStarNode> closedSet;
 
     private void Awake()
     {
         GameMatrix = new int[Calculator.length, Calculator.length];
 
-        for (int i = 0; i < Calculator.length; i++) //fila
-            for (int j = 0; j < Calculator.length; j++) //columna
+        for (int i = 0; i < Calculator.length; i++) // fila
+            for (int j = 0; j < Calculator.length; j++) // columna
                 GameMatrix[i, j] = 0;
 
         var rand1 = UnityEngine.Random.Range(0, Calculator.length);
@@ -29,10 +29,10 @@ public class GameManager : MonoBehaviour
         SetObjectivePoint(startPos);
 
         AStarNode startNode = new AStarNode(startPos, 0, CalculateDistance(startPos, objectivePos));
-        openSet = new PriorityQueue<AStarNode>();
-        openSet.Enqueue(startNode, startNode.fCost);
+        openSet = new List<AStarNode>();
+        openSet.Add(startNode);
 
-        closedSet = new HashSet<AStarNode>();
+        closedSet = new List<AStarNode>();
 
         GameMatrix[startPos[0], startPos[1]] = 1;
         GameMatrix[objectivePos[0], objectivePos[1]] = 2;
@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
         {
             if (openSet.Count > 0)
             {
-                AStarNode currentNode = openSet.Dequeue();
+                AStarNode currentNode = GetLowestFCostNode(openSet);
 
                 if (currentNode.position[0] == objectivePos[0] && currentNode.position[1] == objectivePos[1])
                 {
@@ -89,6 +89,7 @@ public class GameManager : MonoBehaviour
                     return;
                 }
 
+                openSet.Remove(currentNode);
                 closedSet.Add(currentNode);
 
                 // Check neighbors
@@ -122,9 +123,9 @@ public class GameManager : MonoBehaviour
                 int hCost = CalculateDistance(neighborPos, objectivePos);
                 AStarNode neighbor = new AStarNode(neighborPos, gCost, hCost, currentNode);
 
-                if (!openSet.Contains(neighbor))
+                if (!IsInOpenSet(neighbor))
                 {
-                    openSet.Enqueue(neighbor, neighbor.fCost);
+                    openSet.Add(neighbor);
                     InstantiateToken(token3, neighborPos);
                 }
             }
@@ -146,6 +147,31 @@ public class GameManager : MonoBehaviour
             }
         }
         return false;
+    }
+
+    private bool IsInOpenSet(AStarNode node)
+    {
+        foreach (AStarNode n in openSet)
+        {
+            if (n.position[0] == node.position[0] && n.position[1] == node.position[1])
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private AStarNode GetLowestFCostNode(List<AStarNode> nodes)
+    {
+        AStarNode lowestNode = nodes[0];
+        foreach (AStarNode node in nodes)
+        {
+            if (node.fCost < lowestNode.fCost)
+            {
+                lowestNode = node;
+            }
+        }
+        return lowestNode;
     }
 
     private void GeneratePath(AStarNode endNode)

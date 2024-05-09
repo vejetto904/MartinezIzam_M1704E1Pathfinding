@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+// Al final no lo utilizo.
 public class PriorityQueue<T>
 {
     private List<Tuple<T, int>> elements = new List<Tuple<T, int>>();
